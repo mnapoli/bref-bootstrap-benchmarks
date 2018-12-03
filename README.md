@@ -165,7 +165,7 @@ Those are Lambda execution time (not HTTP response time because you would have t
 | Solution | Framework | Average | Minimum | URL |
 |----------|-----------|---------|---------|-----|
 | Bref 0.2 (baseline) | Symfony | 50ms | 26ms | [url](https://kvverflq1a.execute-api.us-east-2.amazonaws.com/dev) |
-| A |  |  |  |  |
+| A | Symfony | 6ms | 3ms | [url](https://uvrof4qhjb.execute-api.us-east-2.amazonaws.com/Prod) |
 | B |  |  |  |  |
 | C | Symfony | 81ms | 65ms | [url](https://x9xirvj7a5.execute-api.us-east-2.amazonaws.com/Prod) |
 | D | Symfony | 26ms | 15ms | [url](https://elha5ztbse.execute-api.us-east-2.amazonaws.com/Prod) |
