@@ -193,6 +193,7 @@ Those are Lambda execution time (not HTTP response time because you would have t
 | D | Symfony | 26ms | 15ms | [url](https://elha5ztbse.execute-api.us-east-2.amazonaws.com/Prod) |
 | E |  |  |  |  |
 | F |  |  |  |  |
+| G |  |  |  |  |
 
 The LAMP stack is a baseline of running the same code but on a classic server with Apache or Nginx. This will help compare performances between LAMP and PHP on Lambda.
 
