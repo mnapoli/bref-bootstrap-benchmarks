@@ -1,0 +1,36 @@
+service: bref-demo-symfony
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  region: us-east-2
+
+package:
+  exclude:
+    - '*'
+    - '**'
+  include:
+    - handler.js
+    - bref.php
+    - '.bref/**'
+    - 'src/**'
+    - 'vendor/**'
+    - 'composer.json'
+    - 'bin/**'
+    - 'config/**'
+    - 'templates/**'
+    - 'var/cache/prod/**'
+
+functions:
+  # By default we create one "main" function
+  main:
+    handler: handler.handle
+    timeout: 20
+    # The function will match all HTTP URLs
+    events:
+      - http: 'ANY /'
+      - http: 'ANY {proxy+}'
+    environment:
+      APP_ENV: 'prod'
+      APP_DEBUG: '0'
+      APP_SECRET: '67d829bf61dc5f87a73fd814e2c9f629'

@@ -160,14 +160,16 @@ Solution E is about starting PHP-FPM and run it with only one PHP worker. The `b
 
 ## Results
 
-| Solution | Framework | Average Lambda execution time | URL |
-|----------|-----------|-------------------------------|-----|
-| Bref 0.2 (baseline) |  |  |  |
-| A |  |  |  |
-| B |  |  |  |
-| C | Symfony | 81ms | [url](https://x9xirvj7a5.execute-api.us-east-2.amazonaws.com/Prod) |
-| D | Symfony | 26ms | [url](https://elha5ztbse.execute-api.us-east-2.amazonaws.com/Prod) |
-| E |  |  |  |
+Those are Lambda execution time (not HTTP response time because you would have to account API Gateway).
+
+| Solution | Framework | Average | Minimum | URL |
+|----------|-----------|---------|---------|-----|
+| Bref 0.2 (baseline) | Symfony | 50ms | 26ms | [url](https://kvverflq1a.execute-api.us-east-2.amazonaws.com/dev) |
+| A |  |  |  |  |
+| B |  |  |  |  |
+| C | Symfony | 81ms | 65ms | [url](https://x9xirvj7a5.execute-api.us-east-2.amazonaws.com/Prod) |
+| D | Symfony | 26ms | 15ms | [url](https://elha5ztbse.execute-api.us-east-2.amazonaws.com/Prod) |
+| E |  |  |  |  |
 
 ## How to run
 
