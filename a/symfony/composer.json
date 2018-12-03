@@ -1,6 +1,6 @@
 {
     "require": {
-        "php": "^7.1.3",
+        "php": "^7.2.3",
         "ext-iconv": "*",
         "ext-pcntl": "*",
         "ext-curl": "*",
@@ -46,11 +46,5 @@
         "post-update-cmd": [
             "@auto-scripts"
         ]
-    },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "/Users/matthieu/dev/PHP/bref"
-        }
-    ]
+    }
 }
