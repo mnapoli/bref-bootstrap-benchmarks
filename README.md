@@ -1,6 +1,8 @@
-This is a benchmark of possible solutions for running PHP on AWS Lambda.
+This is a benchmark of possible solutions for Bref to run PHP on AWS Lambda.
 
-I will use Symfony in the examples just for illustration but this applies to all frameworks.
+The issue in Bref is here: [mnapoli/bref#100](https://github.com/mnapoli/bref/issues/100).
+
+I will use Symfony in the examples just for illustration but this applies to all frameworks. **Jump at the end for the numbers.**
 
 ## Solutions
 
