@@ -164,6 +164,14 @@ Solution F is about starting the PHP built-in webserver. The `bootstrap` would b
 
 **Help wanted: please send a pull request implementing that :)**
 
+## Solution G
+
+Solution G is about writing a custom PHP SAPI (in C) that is inspired from PHP-FPM and the built-in webserver. This SAPI would run as `bootstrap`, start and wait for an event.
+
+When an event is available it would execute the target PHP script (e.g. index.php) and when the script finishes it would reset the process to scratch and reuse the same process (like PHP-FPM). That would avoid the cost associated to creating a new process (or forking).
+
+That could also allow to run a boot script *before* an event comes, e.g. load Composer and boot Symfony before a request comes.
+
 ## Results
 
 Those are Lambda execution time (not HTTP response time because you would have to account API Gateway).
