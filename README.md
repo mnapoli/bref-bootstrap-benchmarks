@@ -160,13 +160,14 @@ Solution E is about starting PHP-FPM and run it with only one PHP worker. The `b
 
 ## Results
 
-| Solution | Framework | Average Lambda execution time |
-|----------|-----------|-------------------------------|
-| A |  |  |
-| B |  |  |
-| C | Symfony | 81ms |
-| D |  |  |
-| E |  |  |
+| Solution | Framework | Average Lambda execution time | URL |
+|----------|-----------|-------------------------------|-----|
+| Bref 0.2 (baseline) |  |  |  |
+| A |  |  |  |
+| B |  |  |  |
+| C | Symfony | 81ms | [url](https://x9xirvj7a5.execute-api.us-east-2.amazonaws.com/Prod) |
+| D | Symfony | 26ms | [url](https://elha5ztbse.execute-api.us-east-2.amazonaws.com/Prod) |
+| E |  |  |  |
 
 ## How to run
 

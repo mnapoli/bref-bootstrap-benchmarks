@@ -1,11 +1,13 @@
+#!/opt/bin/php -c/opt/php.ini
 <?php
-declare(strict_types=1);
 
 use App\Kernel;
 use Bref\Bridge\Psr7\RequestFactory;
 use Bref\Bridge\Symfony\SymfonyAdapter;
 use Bref\Http\LambdaResponse;
 use Symfony\Component\Debug\Debug;
+
+echo 'Cold start' . PHP_EOL;
 
 ini_set('display_errors', '1');
 error_reporting(E_ALL);
@@ -20,18 +22,29 @@ $kernel = new Kernel('prod', false);
 $kernel->boot();
 $symfonyAdapter = new SymfonyAdapter($kernel);
 
-// This is a blocking HTTP call until an event is available
-[$event, $invocationId] = waitForEventFromLambdaApi($lambdaRuntimeApi);
+while (true) {
+    $pid = pcntl_fork();
+    if ($pid) { // Root process
+        // Wait for the child to process the event
+        pcntl_wait($status);
+    } else { // Child process
+        // Here the autoloader is already loaded and Symfony initialized!
 
-$request = RequestFactory::fromLambdaEvent($event);
-$response = $symfonyAdapter->handle($request);
-$lambdaResponse = LambdaResponse::fromPsr7Response($response);
+        // This is a blocking HTTP call until an event is available
+        [$event, $invocationId] = waitForEventFromLambdaApi($lambdaRuntimeApi);
 
-signalSuccessToLambdaApi($lambdaRuntimeApi, $invocationId, $lambdaResponse);
+        $request = RequestFactory::fromLambdaEvent($event);
+        $response = $symfonyAdapter->handle($request);
+        $lambdaResponse = LambdaResponse::fromPsr7Response($response);
 
-exit(0);
+        signalSuccessToLambdaApi($lambdaRuntimeApi, $invocationId, $lambdaResponse);
 
-function waitForEvent(string $lambdaRuntimeApi): ?array
+        // The fork DIES! The root process will resume its execution
+        exit(0);
+    }
+}
+
+function waitForEventFromLambdaApi(string $lambdaRuntimeApi): ?array
 {
     $ch = curl_init("http://$lambdaRuntimeApi/2018-06-01/runtime/invocation/next");
 
@@ -88,7 +101,7 @@ function waitForEvent(string $lambdaRuntimeApi): ?array
     return [$event, $invocationId];
 }
 
-function success(string $lambdaRuntimeApi, string $invocationId, LambdaResponse $response)
+function signalSuccessToLambdaApi(string $lambdaRuntimeApi, string $invocationId, LambdaResponse $response)
 {
     $ch = curl_init("http://$lambdaRuntimeApi/2018-06-01/runtime/invocation/$invocationId/response");
 
