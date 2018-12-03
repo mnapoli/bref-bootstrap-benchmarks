@@ -158,6 +158,12 @@ while (true) {
 
 Solution E is about starting PHP-FPM and run it with only one PHP worker. The `bootstrap` would be responsible for forwarding Lambda events to PHP-FPM via FastCGI.
 
+### Solution F
+
+Solution F is about starting the PHP built-in webserver. The `bootstrap` would be responsible for forwarding Lambda events to the webserver via HTTP.
+
+**Help wanted: please send a pull request implementing that :)**
+
 ## Results
 
 Those are Lambda execution time (not HTTP response time because you would have to account API Gateway).
@@ -170,8 +176,10 @@ Those are Lambda execution time (not HTTP response time because you would have t
 | A | Symfony | 6ms | 3ms | [url](https://uvrof4qhjb.execute-api.us-east-2.amazonaws.com/Prod) |
 | B |  |  |  |  |
 | C | Symfony | 81ms | 65ms | [url](https://x9xirvj7a5.execute-api.us-east-2.amazonaws.com/Prod) |
+| D | PHP | ?ms | ?ms | [url](https://elha5ztbse.execute-api.us-east-2.amazonaws.com/Prod) |
 | D | Symfony | 26ms | 15ms | [url](https://elha5ztbse.execute-api.us-east-2.amazonaws.com/Prod) |
 | E |  |  |  |  |
+| F |  |  |  |  |
 
 ## How to run
 
