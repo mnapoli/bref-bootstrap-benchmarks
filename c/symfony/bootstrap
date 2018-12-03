@@ -1,0 +1,19 @@
+#!/opt/bin/php -c/opt/php.ini
+<?php
+
+use Symfony\Component\Debug\Debug;
+use Symfony\Component\Process\Process;
+
+echo 'Cold start' . PHP_EOL;
+
+error_reporting(E_ALL);
+
+require __DIR__ . '/vendor/autoload.php';
+
+Debug::enable();
+
+while (true) {
+    $process = new Process(['/opt/bin/php', 'index.php']);
+    $process->setTimeout(null);
+    $process->run();
+}
