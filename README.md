@@ -158,6 +158,16 @@ while (true) {
 
 Solution E is about starting PHP-FPM and run it with only one PHP worker. The `bootstrap` would be responsible for forwarding Lambda events to PHP-FPM via FastCGI.
 
+## Results
+
+| Solution | Framework | Average Lambda execution time |
+|----------|-----------|-------------------------------|
+| A |  |  |
+| B |  |  |
+| C | Symfony | 81ms |
+| D |  |  |
+| E |  |  |
+
 ## How to run
 
 - clone the repository
