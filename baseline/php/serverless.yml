@@ -1,0 +1,26 @@
+service: bref-bootstrap-benchmark-baseline-php
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  region: us-east-2
+
+package:
+  exclude:
+    - '*'
+    - '**'
+  include:
+    - handler.js
+    - bref.php
+    - '.bref/**'
+    - 'src/**'
+    - 'vendor/**'
+
+functions:
+  # By default we create one "main" function
+  main:
+    handler: handler.handle
+    # The function will match all HTTP URLs
+    events:
+      - http: 'ANY /'
+      - http: 'ANY {proxy+}'
