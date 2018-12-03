@@ -1,0 +1,9 @@
+{
+    "require": {
+        "php": "^7.2.3",
+        "ext-pcntl": "*",
+        "ext-curl": "*",
+        "mnapoli/bref": "~0.2.4",
+        "symfony/process": "^4.2"
+    }
+}

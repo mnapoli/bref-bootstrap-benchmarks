@@ -183,6 +183,7 @@ Those are Lambda execution time (not HTTP response time because you would have t
 | A | PHP | 5ms | 1ms | [url](https://d8ua4jrr82.execute-api.us-east-2.amazonaws.com/Prod) |
 | A | Symfony | 6ms | 3ms | [url](https://uvrof4qhjb.execute-api.us-east-2.amazonaws.com/Prod) |
 | B |  |  |  |  |
+| C | PHP |  |  | bugged - please help :) |
 | C | Symfony | 81ms | 65ms | [url](https://x9xirvj7a5.execute-api.us-east-2.amazonaws.com/Prod) |
 | D | PHP | 12ms | 6ms | [url](https://27nex4iys7.execute-api.us-east-2.amazonaws.com/Prod) |
 | D | Symfony | 26ms | 15ms | [url](https://elha5ztbse.execute-api.us-east-2.amazonaws.com/Prod) |
@@ -193,7 +194,7 @@ Those are Lambda execution time (not HTTP response time because you would have t
 
 - clone the repository
 - `make install`
-- go into a subdirectory and run `make preview` to test it locally
+- go into a subdirectory and run `make preview` to test it locally (you'll need to install AWS SAM, the lambda will run in Docker automatically, try it out it's magic!)
 - run `make deploy` in a subdirectory to deploy that lambda
 
 To deploy you will need to create a bucket and update the bucket name everywhere in the scripts. I also used the `us-east-2` region because I don't have anything in that region so it's easy to delete everything afterwards. If you want to let that be configured by an env variable or some other config file send a pull request!
