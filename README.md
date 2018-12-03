@@ -178,6 +178,8 @@ Those are Lambda execution time (not HTTP response time because you would have t
 
 | Solution | Framework | Average | Minimum | URL |
 |----------|-----------|---------|---------|-----|
+| LAMP stack | PHP |  |  | please help :) |
+| LAMP stack | Symfony |  |  | please help :) |
 | Bref 0.2 (baseline) | PHP | 23ms | 15ms | [url](https://69sgjkx4e0.execute-api.us-east-2.amazonaws.com/dev) |
 | Bref 0.2 (baseline) | Symfony | 50ms | 26ms | [url](https://kvverflq1a.execute-api.us-east-2.amazonaws.com/dev) |
 | A | PHP | 5ms | 1ms | [url](https://d8ua4jrr82.execute-api.us-east-2.amazonaws.com/Prod) |
@@ -189,6 +191,8 @@ Those are Lambda execution time (not HTTP response time because you would have t
 | D | Symfony | 26ms | 15ms | [url](https://elha5ztbse.execute-api.us-east-2.amazonaws.com/Prod) |
 | E |  |  |  |  |
 | F |  |  |  |  |
+
+The LAMP stack is a baseline of running the same code but on a classic server with Apache or Nginx. This will help compare performances between LAMP and PHP on Lambda.
 
 ## How to run
 
