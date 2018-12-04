@@ -166,7 +166,7 @@ Solution F is about starting the PHP built-in webserver. The `bootstrap` would b
 
 **Help wanted: please send a pull request implementing that :)**
 
-## Solution G
+### Solution G
 
 Solution G is about writing a custom PHP SAPI (in C) that is inspired from PHP-FPM and the built-in webserver. This SAPI would run as `bootstrap`, start and wait for an event.
 
