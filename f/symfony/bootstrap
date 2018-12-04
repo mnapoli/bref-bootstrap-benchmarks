@@ -1,40 +1,45 @@
 #!/opt/bin/php -c/opt/php.ini
 <?php
-
-use App\Kernel;
 use Bref\Bridge\Psr7\RequestFactory;
-use Bref\Bridge\Symfony\SymfonyAdapter;
 use Bref\Http\LambdaResponse;
-use Symfony\Component\Debug\Debug;
+use Symfony\Component\Process\Process;
 
 echo 'Cold start' . PHP_EOL;
-
-ini_set('display_errors', '1');
-error_reporting(E_ALL);
 
 $lambdaRuntimeApi = getenv('AWS_LAMBDA_RUNTIME_API');
 
 require __DIR__ . '/vendor/autoload.php';
 
-Debug::enable();
+$server = new Process("php -S localhost:8000 'index.php'");
+$server->setTimeout(null);
+$server->start(function ($type, $output) {
+    if ($type === Process::ERR) {
+        echo($output);
+        exit(1);
+    }
+});
 
-// BOOT Symfony BEFORE a request comes in!
-$kernel = new Kernel('prod', false);
-$symfonyAdapter = new SymfonyAdapter($kernel);
+// Wait for the server to start
+sleep(1);
+
+register_shutdown_function(function() use($server) {
+    $server->stop();
+});
+
+$client = new \GuzzleHttp\Client([
+    'base_uri' => 'http://localhost:8000/',
+    'http_errors' => false,
+]);
 
 while (true) {
-    $kernel->boot();
-
     // This is a blocking HTTP call until an event is available
     [$event, $invocationId] = waitForEventFromLambdaApi($lambdaRuntimeApi);
 
     $request = RequestFactory::fromLambdaEvent($event);
-    $response = $symfonyAdapter->handle($request);
+    $response = $client->send($request);
     $lambdaResponse = LambdaResponse::fromPsr7Response($response);
 
     signalSuccessToLambdaApi($lambdaRuntimeApi, $invocationId, $lambdaResponse);
-
-    $kernel->shutdown();
 }
 
 function waitForEventFromLambdaApi(string $lambdaRuntimeApi): ?array

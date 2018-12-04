@@ -1,7 +1,5 @@
 #!/opt/bin/php -c/opt/php.ini
 <?php
-error_reporting(E_ALL);
-ini_set("display_errors", 1);
 use Bref\Bridge\Psr7\RequestFactory;
 use Bref\Http\LambdaResponse;
 use Symfony\Component\Process\Process;

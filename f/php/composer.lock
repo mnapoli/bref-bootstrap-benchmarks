@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a8e846bc331bda99e2b0892e2a47b7b5",
+    "content-hash": "343287555283e5454b9401827022d78d",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.80.1",
+            "version": "3.80.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "16819253927a18f96c9bbd85cb1b47419e5bc371"
+                "reference": "2f1509337ed63ab186ed6306eb5d6ea674a3fdab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/16819253927a18f96c9bbd85cb1b47419e5bc371",
-                "reference": "16819253927a18f96c9bbd85cb1b47419e5bc371",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/2f1509337ed63ab186ed6306eb5d6ea674a3fdab",
+                "reference": "2f1509337ed63ab186ed6306eb5d6ea674a3fdab",
                 "shasum": ""
             },
             "require": {
@@ -87,7 +87,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2018-11-30T00:01:18+00:00"
+            "time": "2018-12-03T23:05:45+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -207,16 +207,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "1.5.0",
+            "version": "1.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "53662d6688033a5eccde987bdd5a4a98ebe2d952"
+                "reference": "9b809aa5fcc7c6bddf35bea6cec77e86b8485a5c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/53662d6688033a5eccde987bdd5a4a98ebe2d952",
-                "reference": "53662d6688033a5eccde987bdd5a4a98ebe2d952",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/9b809aa5fcc7c6bddf35bea6cec77e86b8485a5c",
+                "reference": "9b809aa5fcc7c6bddf35bea6cec77e86b8485a5c",
                 "shasum": ""
             },
             "require": {
@@ -270,7 +270,7 @@
                 "uri",
                 "url"
             ],
-            "time": "2018-12-03T05:07:51+00:00"
+            "time": "2018-12-04T18:48:06+00:00"
         },
         {
             "name": "innmind/json",
@@ -1502,5 +1502,8 @@
         "ext-pcntl": "*",
         "ext-curl": "*"
     },
-    "platform-dev": []
+    "platform-dev": [],
+    "platform-overrides": {
+        "php": "7.2.5"
+    }
 }
