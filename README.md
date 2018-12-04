@@ -164,7 +164,6 @@ Solution E is about starting PHP-FPM and run it with only one PHP worker. The `b
 
 Solution F is about starting the PHP built-in webserver. The `bootstrap` would be responsible for forwarding Lambda events to the webserver via HTTP.
 
-**Help wanted: please send a pull request implementing that :)**
 
 ## Solution G
 
@@ -192,7 +191,8 @@ Those are Lambda execution time (not HTTP response time because you would have t
 | D | PHP | 12ms | 6ms | [url](https://27nex4iys7.execute-api.us-east-2.amazonaws.com/Prod) |
 | D | Symfony | 26ms | 15ms | [url](https://elha5ztbse.execute-api.us-east-2.amazonaws.com/Prod) |
 | E |  |  |  |  |
-| F |  |  |  |  |
+| F | PHP | 5ms | 1.6ms |  |
+| F | Symfony | 11ms | 3ms |  |
 | G |  |  |  |  |
 
 The LAMP stack is a baseline of running the same code but on a classic server with Apache or Nginx. This will help compare performances between LAMP and PHP on Lambda.

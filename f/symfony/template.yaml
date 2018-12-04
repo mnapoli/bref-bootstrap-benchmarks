@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'Bref bootstrap benchmark F - Symfony'
+
+Globals:
+    Function:
+        Timeout: 10
+        MemorySize: 1024
+
+Resources:
+    DemoFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            FunctionName: 'bref-bootstrap-benchmark-f-symfony'
+            Description: 'Bref bootstrap benchmark F - Symfony'
+            CodeUri: .
+            Handler: bref.php
+            Runtime: provided
+            Layers:
+                - 'arn:aws:lambda:us-east-2:416566615250:layer:php-72:3'
+            Environment:
+                Variables:
+                    APP_ENV: prod
+                    APP_DEBUG: '0'
+                    APP_SECRET: '67d829bf61dc5f87a73fd814e2c9f629'
+            Events:
+                HttpRoot:
+                    Type: Api
+                    Properties:
+                        Path: /
+                        Method: ANY
+                HttpSubPaths:
+                    Type: Api
+                    Properties:
+                        Path: /{proxy+}
+                        Method: ANY
+
+Outputs:
+    DemoApi:
+        Description: "API Gateway endpoint URL for Prod stage"
+        Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+    DemoFunction:
+        Description: "Demo Lambda Function ARN"
+        Value: !GetAtt DemoFunction.Arn
