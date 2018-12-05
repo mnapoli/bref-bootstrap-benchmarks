@@ -1,0 +1,171 @@
+#!/opt/bin/php -c/opt/php.ini
+<?php
+use Bref\Bridge\Psr7\RequestFactory;
+use Bref\Http\LambdaResponse;
+use Psr\Http\Message\RequestInterface;
+
+use hollodotme\FastCGI\Client;
+use hollodotme\FastCGI\SocketConnections\NetworkSocket;
+use Symfony\Component\Process\Process;
+
+echo 'Cold start' . PHP_EOL;
+
+ini_set('display_errors', '1');
+error_reporting(E_ALL);
+
+$lambdaRuntimeApi = getenv('AWS_LAMBDA_RUNTIME_API');
+
+require __DIR__ . '/vendor/autoload.php';
+
+class PsrRequest extends \hollodotme\FastCGI\Requests\AbstractRequest {
+    /** @var  RequestInterface */
+    protected $request;
+    public function __construct(string $scriptFilename, RequestInterface $request)
+    {
+        $this->request = $request;
+        parent::__construct($scriptFilename, (string) $request->getBody());
+
+        $this->setRequestUri((string) $request->getUri());
+    }
+
+    public function getRequestMethod(): string
+    {
+        return $this->request->getMethod();
+    }
+}
+
+
+$cgi = new Process("php-cgi -b 127.0.0.1:9000 -c /opt/php.ini -d extension_dir=/opt/php/extensions");
+$cgi->setTimeout(null);
+$cgi->start(function ($type, $output) {
+    var_dump($output);
+    if ($type === Process::ERR) {
+        echo($output);
+        exit(1);
+    }
+});
+
+register_shutdown_function(function() use(&$cgi) {
+    $cgi->stop();
+});
+
+// Wait for the server to start
+sleep(1);
+
+$connection = new NetworkSocket('127.0.0.1', 9000);
+$client = new Client( $connection );
+
+while (true) {
+    // This is a blocking HTTP call until an event is available
+    [$event, $invocationId] = waitForEventFromLambdaApi($lambdaRuntimeApi);
+
+    $request = RequestFactory::fromLambdaEvent($event);
+
+    $fcgiRequest = new PsrRequest(getenv('_HANDLER'), $request);
+    $fcgiResponse = $client->sendRequest($fcgiRequest);
+
+    list($status) = explode(' ', $fcgiResponse->getHeader('Status') ?: '200 OK');
+    $response = new \GuzzleHttp\Psr7\Response($status, $fcgiResponse->getHeaders(), $fcgiResponse->getBody());
+
+    $lambdaResponse = LambdaResponse::fromPsr7Response($response);
+
+    signalSuccessToLambdaApi($lambdaRuntimeApi, $invocationId, $lambdaResponse);
+}
+
+function waitForEventFromLambdaApi(string $lambdaRuntimeApi): ?array
+{
+    $ch = curl_init("http://$lambdaRuntimeApi/2018-06-01/runtime/invocation/next");
+
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_FAILONERROR, true);
+
+    $invocationId = '';
+
+    curl_setopt($ch, CURLOPT_HEADERFUNCTION, function ($ch, $header) use (&$invocationId) {
+        if (! preg_match('/:\s*/', $header)) {
+            return strlen($header);
+        }
+
+        [$name, $value] = preg_split('/:\s*/', $header, 2);
+
+        if (strtolower($name) == 'lambda-runtime-aws-request-id') {
+            $invocationId = trim($value);
+        }
+
+        return strlen($header);
+    });
+
+    $body = '';
+
+    curl_setopt($ch, CURLOPT_WRITEFUNCTION, function ($ch, $chunk) use (&$body) {
+        $body .= $chunk;
+
+        return strlen($chunk);
+    });
+
+    curl_exec($ch);
+
+    if (curl_error($ch)) {
+        die('Failed to fetch next Lambda invocation: ' . curl_error($ch) . "\n");
+    }
+
+    if ($invocationId == '') {
+        die('Failed to determine Lambda invocation ID');
+    }
+
+    curl_close($ch);
+
+    if (! $body) {
+        die("Empty Lambda invocation response\n");
+    }
+
+    $event = json_decode($body, true);
+
+    if (! array_key_exists('requestContext', $event)) {
+        fail($lambdaRuntimeApi, $invocationId, 'Event is not an API Gateway request');
+        return null;
+    }
+
+    return [$event, $invocationId];
+}
+
+function signalSuccessToLambdaApi(string $lambdaRuntimeApi, string $invocationId, LambdaResponse $response)
+{
+    $ch = curl_init("http://$lambdaRuntimeApi/2018-06-01/runtime/invocation/$invocationId/response");
+
+    $response_json = $response->toJson();
+
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $response_json);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'Content-Length: ' . strlen($response_json),
+    ]);
+
+    curl_exec($ch);
+    curl_close($ch);
+}
+
+function fail($lambdaRuntimeApi, $invocationId, $errorMessage)
+{
+    $ch = curl_init("http://$lambdaRuntimeApi/2018-06-01/runtime/invocation/$invocationId/response");
+
+    $response = [];
+
+    $response['statusCode'] = 500;
+    $response['body'] = $errorMessage;
+
+    $response_json = json_encode($response);
+
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $response_json);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'Content-Length: ' . strlen($response_json),
+    ]);
+
+    curl_exec($ch);
+    curl_close($ch);
+}

@@ -1,0 +1,15 @@
+{
+    "require": {
+        "php": "^7.2.3",
+        "ext-pcntl": "*",
+        "ext-curl": "*",
+        "mnapoli/bref": "~0.2.4",
+        "guzzlehttp/guzzle": "^6.3",
+        "hollodotme/fast-cgi-client": "^2.4"
+    },
+    "config": {
+        "platform": {
+            "php": "7.2.5"
+        }
+    }
+}
