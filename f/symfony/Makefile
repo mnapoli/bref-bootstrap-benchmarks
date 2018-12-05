@@ -1,5 +1,5 @@
 install:
-	composer install --optimize-autoloader --no-scripts --no-dev
+	composer install --classmap-authoritative --no-scripts --no-dev
 	APP_ENV=prod php bin/console cache:clear --no-debug --no-warmup
 	APP_ENV=prod php bin/console cache:warmup
 
