@@ -10,7 +10,10 @@ $lambdaRuntimeApi = getenv('AWS_LAMBDA_RUNTIME_API');
 
 require __DIR__ . '/vendor/autoload.php';
 
-$server = new Process("php -S localhost:8000 'index.php'");
+// Will be index.php in this case
+$handler = escapeshellarg(getenv('_HANDLER'));
+
+$server = new Process("php -S localhost:8000 -c /opt/php.ini -d extension_dir=/opt/php/extensions {$handler} ");
 $server->setTimeout(null);
 $server->start(function ($type, $output) {
     if ($type === Process::ERR) {

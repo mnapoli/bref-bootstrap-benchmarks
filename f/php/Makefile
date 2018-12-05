@@ -1,5 +1,5 @@
 install:
-	composer install --classmap-authoritative --no-dev
+	composer install --optimize-autoloader --no-dev
 
 preview:
 	sam local start-api --region us-east-2
