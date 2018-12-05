@@ -1,3 +1,4 @@
 .cloudformation.yaml
 vendor/
 .bref/
+.idea/
