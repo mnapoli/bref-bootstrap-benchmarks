@@ -14,7 +14,7 @@ Resources:
             FunctionName: 'bref-bootstrap-benchmark-f-php'
             Description: 'Bref bootstrap benchmark F - PHP'
             CodeUri: .
-            Handler: bref.php
+            Handler: index.php
             Runtime: provided
             Layers:
                 - 'arn:aws:lambda:us-east-2:416566615250:layer:php-72:3'
