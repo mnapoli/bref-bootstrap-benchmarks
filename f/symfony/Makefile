@@ -11,7 +11,7 @@ package:
 	sam package \
         --template-file template.yaml \
         --output-template-file .cloudformation.yaml \
-        --s3-bucket bref-bootstrap-benchmarks
+        --s3-bucket bref-bootstrap-benchmarks-fcs-us-east-2
 upload:
 	sam deploy \
         --template-file .cloudformation.yaml \

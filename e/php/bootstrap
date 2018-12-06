@@ -2,10 +2,6 @@
 <?php
 use Bref\Bridge\Psr7\RequestFactory;
 use Bref\Http\LambdaResponse;
-use Psr\Http\Message\RequestInterface;
-
-use hollodotme\FastCGI\Client;
-use hollodotme\FastCGI\SocketConnections\NetworkSocket;
 use Symfony\Component\Process\Process;
 
 echo 'Cold start' . PHP_EOL;
@@ -17,28 +13,9 @@ $lambdaRuntimeApi = getenv('AWS_LAMBDA_RUNTIME_API');
 
 require __DIR__ . '/vendor/autoload.php';
 
-class PsrRequest extends \hollodotme\FastCGI\Requests\AbstractRequest {
-    /** @var  RequestInterface */
-    protected $request;
-    public function __construct(string $scriptFilename, RequestInterface $request)
-    {
-        $this->request = $request;
-        parent::__construct($scriptFilename, (string) $request->getBody());
-
-        $this->setRequestUri((string) $request->getUri());
-    }
-
-    public function getRequestMethod(): string
-    {
-        return $this->request->getMethod();
-    }
-}
-
-
 $cgi = new Process("php-cgi -b 127.0.0.1:9000 -c /opt/php.ini -d extension_dir=/opt/php/extensions");
 $cgi->setTimeout(null);
 $cgi->start(function ($type, $output) {
-    var_dump($output);
     if ($type === Process::ERR) {
         echo($output);
         exit(1);
@@ -52,22 +29,44 @@ register_shutdown_function(function() use(&$cgi) {
 // Wait for the server to start
 sleep(1);
 
-$connection = new NetworkSocket('127.0.0.1', 9000);
-$client = new Client( $connection );
+$fastcgi = new Hoa\Fastcgi\Responder(
+    new Hoa\Socket\Client('tcp://127.0.0.1:9000')
+);
 
 while (true) {
     // This is a blocking HTTP call until an event is available
     [$event, $invocationId] = waitForEventFromLambdaApi($lambdaRuntimeApi);
 
-    $request = RequestFactory::fromLambdaEvent($event);
+    $content = $event['body'] ?? '';
+    $params = [
+        'GATEWAY_INTERFACE' => 'FastCGI/1.0',
+        'REQUEST_METHOD'    => $event['httpMethod'] ?? 'GET',
+        'REQUEST_URI'       => $event['path'] ?? '/',
+        'SCRIPT_FILENAME'   => __DIR__ . '/' . getenv('_HANDLER'),
+        'SERVER_SOFTWARE'   => 'bref',
+        'REMOTE_ADDR'       => '127.0.0.1',
+        'REMOTE_PORT'       => '80',
+        'SERVER_ADDR'       => '127.0.0.1',
+        'SERVER_NAME'       => $event['headers']['Host'] ?? 'localhost',
+        'SERVER_PROTOCOL'   => 'HTTP/1.1',
+        'CONTENT_LENGTH'    => mb_strlen($content, 'UTF-8'),
+        'PATH_INFO'         => $event['path'] ?? '/',
+        'QUERY_STRING'      => $queryString = http_build_query($event['queryStringParameters'] ?? []),
+    ];
 
-    $fcgiRequest = new PsrRequest(getenv('_HANDLER'), $request);
-    $fcgiResponse = $client->sendRequest($fcgiRequest);
+    foreach ($event['headers'] as $header => $value) {
+        $key = strtoupper(str_replace('-', '_', $header));
+        $params[$key] = $value;
+    }
 
-    list($status) = explode(' ', $fcgiResponse->getHeader('Status') ?: '200 OK');
-    $response = new \GuzzleHttp\Psr7\Response($status, $fcgiResponse->getHeaders(), $fcgiResponse->getBody());
+    $fastcgi->send($params, $content);
 
-    $lambdaResponse = LambdaResponse::fromPsr7Response($response);
+    $headers = $fastcgi->getResponseHeaders();
+    $headers['status'] = $headers['status'] ?? '200 Ok';
+
+    list($status) = explode(' ', $headers['status']);
+
+    $lambdaResponse = new LambdaResponse($status, $headers, $fastcgi->getResponseContent());
 
     signalSuccessToLambdaApi($lambdaRuntimeApi, $invocationId, $lambdaResponse);
 }

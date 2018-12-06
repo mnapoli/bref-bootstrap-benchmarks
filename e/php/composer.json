@@ -1,15 +1,27 @@
 {
     "require": {
         "php": "^7.2.3",
-        "ext-pcntl": "*",
         "ext-curl": "*",
-        "mnapoli/bref": "~0.2.4",
-        "guzzlehttp/guzzle": "^6.3",
-        "hollodotme/fast-cgi-client": "^2.4"
+        "ext-iconv": "*",
+        "ext-json": "*",
+        "ext-pcntl": "*",
+        "guzzlehttp/psr7": "^1.5",
+        "hoa/fastcgi": "3.17.01.10",
+        "hoa/socket": "1.17.05.16",
+        "mnapoli/bref": "~0.2.4"
     },
     "config": {
         "platform": {
             "php": "7.2.5"
+        },
+        "preferred-install": {
+            "*": "dist"
+        },
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
         }
     }
 }
