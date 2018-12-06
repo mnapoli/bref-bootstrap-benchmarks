@@ -12,46 +12,101 @@ require __DIR__ . '/vendor/autoload.php';
 while (true) {
     // This is a blocking HTTP call until an event is available
     [$event, $invocationId] = waitForEventFromLambdaApi($lambdaRuntimeApi);
+    processEvent($event, $lambdaRuntimeApi, $invocationId);
+}
+
+/**
+ * @param $event
+ * @param $pipes
+ * @param $lambdaRuntimeApi
+ * @param $invocationId
+ */
+function processEvent($event, $lambdaRuntimeApi, $invocationId): void
+{
+    $pipes = [];
+    $headers = [];
+    $queryParams = '';
+    $cwd = '/var/task';
+    $scriptPath = __DIR__ . '/index.php';
+
 
     // Sets some sane defaults here so that this function doesn't fail
     // when it's not handling a HTTP request from API Gateway.
-    $requestMethod = array_key_exists('httpMethod', $event ) ? $event['httpMethod'] : 'GET';
-    $requestBody = array_key_exists('body', $event ) ? $event['body'] : '';
-    $serverName = array_key_exists('headers', $event ) ? $event['headers']['Host'] : 'lambda_test.dev';
-    $requestUri = array_key_exists('path', $event ) ? $event['path'] : '';
-    $headers = [];
-    $queryParams = '';
+    $requestMethod = array_key_exists('httpMethod', $event) ? $event['httpMethod'] : 'GET';
+    $requestBody = array_key_exists('body', $event) ? $event['body'] : '';
+    $serverName = array_key_exists('headers', $event) ? $event['headers']['Host'] : 'lambda_test.dev';
+    $requestUri = array_key_exists('path', $event) ? $event['path'] : '';
 
-    // Convert all headers passed by API Gateway into the correct format for PHP CGI.
-    // This means converting a header such as "X-Test" into "HTTP_X-TEST".
-    if (array_key_exists('headers', $event )) {
-        foreach ($event['headers'] as $key => $value) {
-            $header = strtoupper(str_replace('-', '_', $key));
-            $headers[$header] = $value;
-            $headers['HTTP_' . $header] = $value;
 
-        }
-    }
-
-    // Convert query parameters passed by API Gateway into the correct format for PHP CGI.
-    if (array_key_exists('queryStringParameters', $event ) && !empty($event['queryStringParameters'])) {
-        $parameters = [];
-
-        foreach ($event['queryStringParameters'] as $key => $value) {
-            $parameters[] = $key . '=' . $value;
-        }
-        $queryParams = join("&", $parameters);
-    }
-
-    // Spawn the PHP CGI process with a bunch of environment variables that describe the request.
-    $scriptPath = __DIR__ . '/index.php';
+    processHeaders($event, $headers);
+    processParameters($event, $queryParams);
+    $env = processCGIEnvVars($requestMethod, $scriptPath, $serverName, $requestUri, $queryParams, $requestBody, $headers);
 
     $descriptorspec = array(
         0 => array("pipe", "r"),  // stdin is a pipe that the child will read from
         1 => array("pipe", "w"),  // stdout is a pipe that the child will write to
-        2 => array("pipe", "w") // stderr is a file to write to
+        2 => array("pipe", "w")  // stderr is a pipe that the child may write to
     );
 
+    // Spawn the PHP CGI process with a bunch of environment variables that describe the request.
+    $process = proc_open("/opt/bin/php-cgi -c/opt/php.ini -f$scriptPath", $descriptorspec, $pipes, $cwd, $env);
+
+    processCGI($lambdaRuntimeApi, $invocationId, $process, $pipes, $requestBody);
+}
+
+/**
+ * @param $lambdaRuntimeApi
+ * @param $invocationId
+ * @param $process
+ * @param $pipes
+ * @param $requestBody
+ */
+function processCGI($lambdaRuntimeApi, $invocationId, $process, $pipes, $requestBody): void
+{
+    if (is_resource($process)) {
+        // $pipes now looks like this:
+        // 0 => writeable handle connected to child stdin
+        // 1 => readable handle connected to child stdout
+        // Any error output will be appended to /tmp/error-output.txt
+
+        fwrite($pipes[0], $requestBody);
+        fclose($pipes[0]);
+
+        $response = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+
+        $error = stream_get_contents($pipes[2]);
+        fclose($pipes[2]);
+
+        // It is important that you close any pipes before calling
+        // proc_close in order to avoid a deadlock
+        $return_value = proc_close($process);
+        if ($return_value === 0) {
+            $lambdaResponse = [
+                'body' => $response,
+                'statusCode' => 200
+            ];
+            signalSuccessToLambdaApi($lambdaRuntimeApi, $invocationId, $lambdaResponse);
+        } else {
+            fail($lambdaRuntimeApi, $invocationId, $error);
+        }
+    } else {
+        fail($lambdaRuntimeApi, $invocationId, 'Failed to run php-cgi');
+    }
+}
+
+/**
+ * @param $requestMethod
+ * @param $scriptPath
+ * @param $serverName
+ * @param $requestUri
+ * @param $queryParams
+ * @param $requestBody
+ * @param $headers
+ * @return array
+ */
+function processCGIEnvVars($requestMethod, $scriptPath, $serverName, $requestUri, $queryParams, $requestBody, $headers): array
+{
     $env = [
         'REDIRECT_STATUS' => 200,
         'REQUEST_METHOD' => $requestMethod,
@@ -67,38 +122,42 @@ while (true) {
     ];
 
     $env = array_merge($_ENV, $env, $headers);
-    $cwd = '/var/task';
+    return $env;
+}
 
-    $process = proc_open("/opt/bin/php -c/opt/php.ini -f$scriptPath", $descriptorspec, $pipes, $cwd, $env);
+/**
+ * @param $event
+ * @param $queryParams
+ */
+function processParameters($event, &$queryParams): void
+{
+// Convert query parameters passed by API Gateway into the correct format for PHP CGI.
+    if (array_key_exists('queryStringParameters', $event) && !empty($event['queryStringParameters'])) {
+        $parameters = [];
 
-    if (is_resource($process)) {
-        // $pipes now looks like this:
-        // 0 => writeable handle connected to child stdin
-        // 1 => readable handle connected to child stdout
-        // Any error output will be appended to /tmp/error-output.txt
-
-        fwrite($pipes[0], $requestBody);
-        fclose($pipes[0]);
-
-        $lambdaResponse = stream_get_contents($pipes[1]);
-        fclose($pipes[1]);
-
-        $error = stream_get_contents($pipes[2]);
-        fclose($pipes[2]);
-
-        // It is important that you close any pipes before calling
-        // proc_close in order to avoid a deadlock
-        $return_value = proc_close($process);
-        if ($return_value === 0){
-            print("SUCCEEDED\n");
-            signalSuccessToLambdaApi($lambdaRuntimeApi, $invocationId, $lambdaResponse);
-        }else{
-            print("FAILED: $error\n");
-            print_r(scandir('/opt/bin'));
-            fail($lambdaRuntimeApi, $invocationId, $lambdaResponse);
+        foreach ($event['queryStringParameters'] as $key => $value) {
+            $parameters[] = $key . '=' . $value;
         }
-    }else{
-        fail($lambdaRuntimeApi, $invocationId, 'Failed to run php-cgi');
+        $queryParams = join("&", $parameters);
+    }
+}
+
+/**
+ * Convert all headers passed by API Gateway into the correct format for PHP CGI.
+ * This means converting a header such as "X-Test" into "HTTP_X-TEST".
+ * @param $event
+ * @param $headers
+ * @return array
+ */
+function processHeaders($event, &$headers)
+{
+    //
+    if (array_key_exists('headers', $event)) {
+        foreach ($event['headers'] as $key => $value) {
+            $header = strtoupper(str_replace('-', '_', $key));
+            $headers[$header] = $value;
+            $headers['HTTP_' . $header] = $value;
+        }
     }
 }
 
@@ -159,11 +218,11 @@ function waitForEventFromLambdaApi(string $lambdaRuntimeApi): ?array
     return [$event, $invocationId];
 }
 
-function signalSuccessToLambdaApi(string $lambdaRuntimeApi, string $invocationId, LambdaResponse $response)
+function signalSuccessToLambdaApi(string $lambdaRuntimeApi, string $invocationId, array $response)
 {
     $ch = curl_init("http://$lambdaRuntimeApi/2018-06-01/runtime/invocation/$invocationId/response");
 
-    $response_json = $response->toJson();
+    $response_json = json_encode($response);
 
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
