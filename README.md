@@ -14,6 +14,8 @@ This is very fast, both for cold starts and warm requests! We can get response t
 
 This is a very interesting option that can be worth proposing as an option, but it cannot be the default solution that will work with all apps/frameworks.
 
+<details><summary>Click here for code examples</summary>
+
 Example of a `bootstrap`:
 
 ```php
@@ -38,6 +40,8 @@ while (true) {
 }
 ```
 
+</details>
+
 ### Solution B
 
 The `bootstrap` starts a sub-process (`exec`) every time an event needs to be processed.
@@ -45,6 +49,8 @@ The `bootstrap` starts a sub-process (`exec`) every time an event needs to be pr
 That allows to protect the `bootstrap` process from failures of the children. This is basically what Bref does at the moment.
 
 This is similar too to how PHP-FPM works (in the spirit at least).
+
+<details><summary>Click here for code examples</summary>
 
 Example of a `bootstrap`:
 
@@ -84,9 +90,13 @@ $lambdaResponse = LambdaResponse::fromPsr7Response($response);
 exit(0); // DIE!
 ```
 
+</details>
+
 ### Solution C
 
 Just like *B* except `bootstrap` does not handle events: it immediately executes a sub-process. The PHP sub-process will call the integration HTTP API *and wait for an event*. That means that we can run code **before** waiting for an event. E.g. we can bootstrap Composer's autoloader and Symfony before a request comes in!
+
+<details><summary>Click here for code examples</summary>
 
 Example of a `bootstrap`:
 
@@ -122,9 +132,13 @@ signalSuccessToLambdaApi($lambdaResponse);
 exit(0); // DIE!
 ```
 
+</details>
+
 ### Solution D
 
 How about instead of creating a new process we fork the `bootstrap` process? The app would bootstrap once in total, but still **there is no shared state between events** (because each event is processed by a fork).
+
+<details><summary>Click here for code examples</summary>
 
 Example of `bootstrap`:
 
@@ -155,6 +169,8 @@ while (true) {
     }
 }
 ```
+
+</details>
 
 ### Solution E
 
