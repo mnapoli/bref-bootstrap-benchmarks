@@ -1,15 +1,63 @@
 {
+    "aws/aws-sdk-php": {
+        "version": "3.81.0"
+    },
+    "guzzlehttp/guzzle": {
+        "version": "6.3.3"
+    },
+    "guzzlehttp/promises": {
+        "version": "v1.3.1"
+    },
+    "guzzlehttp/psr7": {
+        "version": "1.5.2"
+    },
+    "hollodotme/fast-cgi-client": {
+        "version": "v2.4.3"
+    },
+    "innmind/json": {
+        "version": "1.1.0"
+    },
+    "jolicode/jolinotif": {
+        "version": "v2.0.1"
+    },
+    "matomo/ini": {
+        "version": "2.0.0"
+    },
+    "mnapoli/bref": {
+        "version": "0.2.37"
+    },
+    "mnapoli/silly": {
+        "version": "1.7.0"
+    },
+    "mtdowling/jmespath.php": {
+        "version": "2.4.0"
+    },
+    "php-di/invoker": {
+        "version": "2.0.0"
+    },
     "psr/cache": {
         "version": "1.0.1"
     },
     "psr/container": {
         "version": "1.0.0"
     },
+    "psr/http-message": {
+        "version": "1.0.1"
+    },
+    "psr/http-server-handler": {
+        "version": "1.0.1"
+    },
     "psr/log": {
         "version": "1.1.0"
     },
     "psr/simple-cache": {
         "version": "1.0.1"
+    },
+    "ralouphie/getallheaders": {
+        "version": "2.0.5"
+    },
+    "riverline/multipart-parser": {
+        "version": "1.2.0"
     },
     "symfony/cache": {
         "version": "v4.2.0"
@@ -77,6 +125,9 @@
     "symfony/process": {
         "version": "v4.2.0"
     },
+    "symfony/psr-http-message-bridge": {
+        "version": "v1.1.0"
+    },
     "symfony/routing": {
         "version": "4.2",
         "recipe": {
@@ -115,5 +166,8 @@
     },
     "twig/twig": {
         "version": "v2.5.0"
+    },
+    "zendframework/zend-diactoros": {
+        "version": "1.8.6"
     }
 }
