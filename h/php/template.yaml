@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: 'Bref bootstrap benchmark A - PHP'
+Description: 'Bref bootstrap benchmark H - PHP'
 
 Globals:
     Function:
@@ -11,8 +11,8 @@ Resources:
     DemoFunction:
         Type: AWS::Serverless::Function
         Properties:
-            FunctionName: 'bref-bootstrap-benchmark-a-php'
-            Description: 'Bref bootstrap benchmark A - PHP'
+            FunctionName: 'bref-bootstrap-benchmark-h-php'
+            Description: 'Bref bootstrap benchmark H - PHP'
             CodeUri: .
             Handler: bref.php
             Runtime: provided
