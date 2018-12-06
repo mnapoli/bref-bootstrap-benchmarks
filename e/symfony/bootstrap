@@ -55,7 +55,7 @@ while (true) {
     ];
 
     foreach ($event['headers'] as $header => $value) {
-        $key = strtoupper(str_replace('-', '_', $header));
+        $key = 'HTTP_' . strtoupper(str_replace('-', '_', $header));
         $params[$key] = $value;
     }
 
