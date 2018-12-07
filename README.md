@@ -158,9 +158,8 @@ while (true) {
 
 ### Solution E
 
-Solution E is about starting PHP-FPM and run it with only one PHP worker. The `bootstrap` would be responsible for forwarding Lambda events to PHP-FPM via FastCGI.
+Solution E is about starting PHP-CGI/PHP-FPM and run it with only one PHP worker. The `bootstrap` would be responsible for forwarding Lambda events using the FastCGI protocol.
 
-*** Note: Currently using FastCGI instead of PHP-FPM, help is welcome :) ***
 ### Solution F
 
 Solution F is about starting the PHP built-in webserver. The `bootstrap` would be responsible for forwarding Lambda events to the webserver via HTTP.
