@@ -1,6 +1,5 @@
 #!/opt/bin/php -c/opt/php.ini
 <?php
-use Bref\Bridge\Psr7\RequestFactory;
 use Bref\Http\LambdaResponse;
 use Symfony\Component\Process\Process;
 
@@ -25,6 +24,8 @@ $cgi->start(function ($type, $output) {
 register_shutdown_function(function() use(&$cgi) {
     $cgi->stop();
 });
+
+sleep(1);
 
 $fastcgi = new Hoa\Fastcgi\Responder(
     new Hoa\Socket\Client('tcp://127.0.0.1:9000')
