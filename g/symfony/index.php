@@ -6,18 +6,12 @@ use Bref\Bridge\Symfony\SymfonyAdapter;
 use Bref\Http\LambdaResponse;
 use Symfony\Component\Debug\Debug;
 
-echo 'Opcache: ' . print_r(ini_get('opcache.enable_cli'), true) . PHP_EOL;
-echo 'Opcache: ' . print_r(ini_get('opcache.file_cache_only'), true) . PHP_EOL;
-var_dump(opcache_get_status());
-
 ini_set('display_errors', '1');
 error_reporting(E_ALL);
 
 $lambdaRuntimeApi = getenv('AWS_LAMBDA_RUNTIME_API');
 
 require __DIR__ . '/vendor/autoload.php';
-
-var_dump(opcache_get_status());
 
 Debug::enable();
 
