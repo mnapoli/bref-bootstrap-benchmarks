@@ -5,9 +5,7 @@
         "ext-iconv": "*",
         "ext-json": "*",
         "ext-pcntl": "*",
-        "guzzlehttp/psr7": "^1.5",
-        "hoa/fastcgi": "3.17.01.10",
-        "hoa/socket": "1.17.05.16",
+        "hollodotme/fast-cgi-client": "^2.4",
         "mnapoli/bref": "~0.2.4"
     },
     "config": {

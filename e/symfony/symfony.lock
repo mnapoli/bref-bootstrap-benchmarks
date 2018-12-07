@@ -23,6 +23,9 @@
     "hoa/fastcgi": {
         "version": "3.17.01.10"
     },
+    "hollodotme/fast-cgi-client": {
+        "version": "v2.4.3"
+    },
     "innmind/json": {
         "version": "1.1.0"
     },
