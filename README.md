@@ -195,8 +195,8 @@ Those are Lambda execution time (not HTTP response time because you would have t
 
 | Solution | Framework | Average | Minimum | URL |
 |----------|-----------|---------|---------|-----|
-| LAMP stack | PHP |  |  | please help :) |
-| LAMP stack | Symfony |  |  | please help :) |
+| LAMP stack | PHP | 1ms | 0ms |  |
+| LAMP stack | Symfony | 6ms | 4ms |  |
 | Bref 0.2 (baseline) | PHP | 23ms | 15ms | [url](https://69sgjkx4e0.execute-api.us-east-2.amazonaws.com/dev) |
 | Bref 0.2 (baseline) | Symfony | 50ms | 26ms | [url](https://kvverflq1a.execute-api.us-east-2.amazonaws.com/dev) |
 | A | PHP | 5ms | 1ms | [url](https://d8ua4jrr82.execute-api.us-east-2.amazonaws.com/Prod) |
