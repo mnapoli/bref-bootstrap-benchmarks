@@ -180,7 +180,6 @@ Solution E is about starting PHP-CGI/PHP-FPM and run it with only one PHP worker
 
 Solution F is about starting the PHP built-in webserver. The `bootstrap` would be responsible for forwarding Lambda events to the webserver via HTTP.
 
-
 ### Solution G
 
 Solution G is about writing a custom PHP SAPI (in C) that is inspired from PHP-FPM and the built-in webserver. This SAPI would run as `bootstrap`, start and wait for an event.
@@ -188,6 +187,10 @@ Solution G is about writing a custom PHP SAPI (in C) that is inspired from PHP-F
 When an event is available it would execute the target PHP script (e.g. index.php) and when the script finishes it would reset the process to scratch and reuse the same process (like PHP-FPM). That would avoid the cost associated to creating a new process (or forking).
 
 That could also allow to run a boot script *before* an event comes, e.g. load Composer and boot Symfony before a request comes.
+
+### Solution H
+
+Solution H is like solution C except it uses PHP CGI instead of PHP CLI. The `bootstrap` would be responsible for executing `php-cgi` on every event/request and forward the event data via the CGI protocol.
 
 ## Results
 
@@ -211,6 +214,8 @@ Those are Lambda execution time (not HTTP response time because you would have t
 | F | PHP | 5ms | 1.6ms |  |
 | F | Symfony | 24ms | 16ms |  |
 | G |  |  |  |  |
+| H | PHP | ? | ? |  |
+| H | Symfony | 45ms | 22ms |  |
 
 The LAMP stack is a baseline of running the same code but on a classic server with Apache or Nginx. This will help compare performances between LAMP and PHP on Lambda.
 
