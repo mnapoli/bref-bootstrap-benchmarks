@@ -11,10 +11,10 @@ package:
 	sam package \
         --template-file template.yaml \
         --output-template-file .cloudformation.yaml \
-        --s3-bucket bref-bootstrap-benchmarks-fcs-us-east-2
+        --s3-bucket bref-bootstrap-benchmarks
 upload:
 	sam deploy \
         --template-file .cloudformation.yaml \
-        --stack-name bref-bootstrap-f-symfony \
+        --stack-name bref-bootstrap-e-symfony \
         --capabilities CAPABILITY_IAM \
         --region us-east-2

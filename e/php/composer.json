@@ -1,0 +1,25 @@
+{
+    "require": {
+        "php": "^7.2.3",
+        "ext-curl": "*",
+        "ext-iconv": "*",
+        "ext-json": "*",
+        "ext-pcntl": "*",
+        "hollodotme/fast-cgi-client": "^2.4",
+        "mnapoli/bref": "~0.2.4"
+    },
+    "config": {
+        "platform": {
+            "php": "7.2.5"
+        },
+        "preferred-install": {
+            "*": "dist"
+        },
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}
