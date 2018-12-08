@@ -41,7 +41,6 @@ while (true) {
     // This is a blocking HTTP call until an event is available
     [$event, $invocationId] = waitForEventFromLambdaApi($lambdaRuntimeApi);
 
-    echo json_encode($event);
     $request = RequestFactory::fromLambdaEvent($event);
     $response = $client->send($request);
     $lambdaResponse = LambdaResponse::fromPsr7Response($response);
