@@ -174,12 +174,11 @@ while (true) {
 
 ### Solution E
 
-Solution E is about starting PHP-FPM and run it with only one PHP worker. The `bootstrap` would be responsible for forwarding Lambda events to PHP-FPM via FastCGI.
+Solution E is about starting PHP-CGI/PHP-FPM and run it with only one PHP worker. The `bootstrap` would be responsible for forwarding Lambda events using the FastCGI protocol.
 
 ### Solution F
 
 Solution F is about starting the PHP built-in webserver. The `bootstrap` would be responsible for forwarding Lambda events to the webserver via HTTP.
-
 
 ### Solution G
 
@@ -189,14 +188,18 @@ When an event is available it would execute the target PHP script (e.g. index.ph
 
 That could also allow to run a boot script *before* an event comes, e.g. load Composer and boot Symfony before a request comes.
 
+### Solution H
+
+Solution H is like solution C except it uses PHP CGI instead of PHP CLI. The `bootstrap` would be responsible for executing `php-cgi` on every event/request and forward the event data via the CGI protocol.
+
 ## Results
 
 Those are Lambda execution time (not HTTP response time because you would have to account API Gateway).
 
 | Solution | Framework | Average | Minimum | URL |
 |----------|-----------|---------|---------|-----|
-| LAMP stack | PHP |  |  | please help :) |
-| LAMP stack | Symfony |  |  | please help :) |
+| LAMP stack | PHP | 1ms | 0ms |  |
+| LAMP stack | Symfony | 6ms | 4ms |  |
 | Bref 0.2 (baseline) | PHP | 23ms | 15ms | [url](https://69sgjkx4e0.execute-api.us-east-2.amazonaws.com/dev) |
 | Bref 0.2 (baseline) | Symfony | 50ms | 26ms | [url](https://kvverflq1a.execute-api.us-east-2.amazonaws.com/dev) |
 | A | PHP | 5ms | 1ms | [url](https://d8ua4jrr82.execute-api.us-east-2.amazonaws.com/Prod) |
@@ -206,11 +209,14 @@ Those are Lambda execution time (not HTTP response time because you would have t
 | C | Symfony | 81ms | 65ms | [url](https://x9xirvj7a5.execute-api.us-east-2.amazonaws.com/Prod) |
 | D | PHP | 12ms | 6ms | [url](https://27nex4iys7.execute-api.us-east-2.amazonaws.com/Prod) |
 | D | Symfony | 26ms | 15ms | [url](https://elha5ztbse.execute-api.us-east-2.amazonaws.com/Prod) |
-| E |  |  |  |  |
+| E | PHP | 5ms | 1.1ms |  |
+| E | Symfony | 27ms | 14ms |  |
 | F | PHP | 5ms | 1.6ms |  |
 | F | Symfony | 24ms | 16ms |  |
 | G | PHP | 10ms | 6ms | [url](https://52ndy2s1ah.execute-api.us-east-2.amazonaws.com/Prod) |
 | G | Symfony | 10ms | 6ms | [url](https://g9fzxul00f.execute-api.us-east-2.amazonaws.com/Prod) |
+| H | PHP | ? | ? |  |
+| H | Symfony | 45ms | 22ms |  |
 
 The LAMP stack is a baseline of running the same code but on a classic server with Apache or Nginx. This will help compare performances between LAMP and PHP on Lambda.
 

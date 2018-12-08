@@ -16,7 +16,9 @@ require __DIR__ . '/vendor/autoload.php';
 // Will be index.php in this case
 $handler = escapeshellarg(getenv('_HANDLER'));
 
-$server = new Process("php -S localhost:8000 -c /opt/php.ini -d extension_dir=/opt/php/extensions {$handler} ");
+$hostname = '127.0.0.1';
+$port = 8000;
+$server = new Process("php -S {$hostname}:{$port} -c /opt/php.ini -d extension_dir=/opt/php/extensions {$handler} ");
 $server->setTimeout(null);
 $server->start(function ($type, $output) {
     if ($type === Process::ERR) {
@@ -25,15 +27,29 @@ $server->start(function ($type, $output) {
     }
 });
 
-// Wait for the server to start
-sleep(1);
-
 register_shutdown_function(function() use($server) {
     $server->stop();
 });
 
+$wait = 10000; // 10ms
+$timeout = 5000000; // 5 secs
+$elapsed = 0;
+
+do {
+    usleep($wait);
+    $fp = @fsockopen($hostname, $port, $errno, $errstr, 2);
+    $elapsed += $wait;
+    if ($elapsed > $timeout) {
+        echo "Timeout while waiting for connection at {$hostname}:{$port}..";
+        exit(1);
+    }
+} while ($fp === false);
+fclose($fp);
+
+echo "Webserver is running on http://{$hostname}:{$port}";
+
 $client = new \GuzzleHttp\Client([
-        'base_uri' => 'http://localhost:8000/',
+        'base_uri' => "http://{$hostname}:{$port}/",
         'http_errors' => false,
 ]);
 

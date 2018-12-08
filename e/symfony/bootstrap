@@ -1,8 +1,10 @@
 #!/opt/bin/php -c/opt/php.ini
 <?php
-use Bref\Bridge\Psr7\RequestFactory;
 use Bref\Http\LambdaResponse;
 use Symfony\Component\Process\Process;
+use hollodotme\FastCGI\Client;
+use hollodotme\FastCGI\Requests\AbstractRequest;
+use hollodotme\FastCGI\SocketConnections\UnixDomainSocket;
 
 echo 'Cold start' . PHP_EOL;
 
@@ -13,53 +15,90 @@ $lambdaRuntimeApi = getenv('AWS_LAMBDA_RUNTIME_API');
 
 require __DIR__ . '/vendor/autoload.php';
 
-// Will be index.php in this case
-$handler = escapeshellarg(getenv('_HANDLER'));
-
-$hostname = '127.0.0.1';
-$port = 8000;
-$server = new Process("php -S {$hostname}:{$port} -c /opt/php.ini -d extension_dir=/opt/php/extensions {$handler} ");
-$server->setTimeout(null);
-$server->start(function ($type, $output) {
+$socket = '/tmp/php-cgi.sock';
+$cgi = new Process("php-cgi -b {$socket} -c /opt/php.ini -d extension_dir=/opt/php/extensions");
+$cgi->setTimeout(null);
+$cgi->start(function ($type, $output) {
     if ($type === Process::ERR) {
         echo($output);
         exit(1);
     }
 });
 
-register_shutdown_function(function() use($server) {
-    $server->stop();
+register_shutdown_function(function() use(&$cgi) {
+    $cgi->stop();
 });
 
 $wait = 10000; // 10ms
 $timeout = 5000000; // 5 secs
 $elapsed = 0;
-
-do {
+while (! file_exists($socket)) {
     usleep($wait);
-    $fp = @fsockopen($hostname, $port, $errno, $errstr, 2);
+    clearstatcache();
     $elapsed += $wait;
     if ($elapsed > $timeout) {
-        echo "Timeout while waiting for connection at {$hostname}:{$port}..";
+        echo "Timeout while waiting for socket at {$socket}..";
         exit(1);
     }
-} while ($fp === false);
-fclose($fp);
+}
 
-echo "Webserver is running on http://{$hostname}:{$port}";
+echo "Fastcgi socket running on {$socket}";
 
-$client = new \GuzzleHttp\Client([
-    'base_uri' => "http://{$hostname}:{$port}/",
-    'http_errors' => false,
-]);
+$client  = new Client(new UnixDomainSocket($socket));
 
 while (true) {
     // This is a blocking HTTP call until an event is available
     [$event, $invocationId] = waitForEventFromLambdaApi($lambdaRuntimeApi);
 
-    $request = RequestFactory::fromLambdaEvent($event);
-    $response = $client->send($request);
-    $lambdaResponse = LambdaResponse::fromPsr7Response($response);
+    $scriptFilename = __DIR__ . '/' . getenv('_HANDLER');
+    $method = $event['httpMethod'] ?? 'GET';
+    $content = $event['body'] ?? '';
+
+    $request = new class($method, $scriptFilename, $content) extends AbstractRequest {
+        private $method;
+        public function __construct(string $method, string $scriptFilename, string $content)
+        {
+            $this->method = $method;
+            parent::__construct($scriptFilename, $content);
+        }
+
+        public function getRequestMethod(): string
+        {
+            return $this->method;
+        }
+    };
+
+    $request->setRequestUri($event['path'] ?? '/');
+    $request->setRemoteAddress('127.0.0.1');
+    $request->setRemotePort(80);
+    $request->setServerName('127.0.0.1');
+    $request->setServerPort(80);
+
+    if (isset($event['headers']['Host'])) {
+        $request->setServerName($event['headers']['Host']);
+    }
+
+    if (isset($event['headers']['Content-Type'])) {
+        $request->setContentType($event['headers']['Content-Type']);
+    }
+
+    if (isset($event['queryStringParameters'])) {
+        $request->setCustomVar('QUERY_STRING',  http_build_query($event['queryStringParameters']));
+    }
+
+    foreach ($event['headers'] as $header => $value) {
+        $key = 'HTTP_' . strtoupper(str_replace('-', '_', $header));
+        $request->setCustomVar($key, $value);
+    }
+
+    $response = $client->sendRequest($request);
+
+    $headers = $response->getHeaders();
+    $headers['status'] = $headers['status'] ?? '200 Ok';
+
+    list($status) = explode(' ', $headers['status']);
+
+    $lambdaResponse = new LambdaResponse($status, $headers, $response->getBody());
 
     signalSuccessToLambdaApi($lambdaRuntimeApi, $invocationId, $lambdaResponse);
 }
