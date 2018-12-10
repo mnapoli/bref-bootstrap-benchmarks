@@ -2,4 +2,4 @@
 
 echo "Cold start"
 
-php -c/opt/php.ini -L index.php
+php -c php.ini -L index.php
