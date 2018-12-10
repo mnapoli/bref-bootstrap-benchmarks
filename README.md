@@ -210,7 +210,7 @@ Those are Lambda execution time (not HTTP response time because you would have t
 | D | PHP | 12ms | 6ms | [url](https://27nex4iys7.execute-api.us-east-2.amazonaws.com/Prod) |
 | D | Symfony | 26ms | 15ms | [url](https://elha5ztbse.execute-api.us-east-2.amazonaws.com/Prod) |
 | E | PHP | 5ms | 1.1ms |  |
-| E | Symfony | 27ms | 14ms |  |
+| E | Symfony | 25ms | 13ms |  |
 | F | PHP | 5ms | 1.6ms |  |
 | F | Symfony | 24ms | 16ms |  |
 | G | PHP | 10ms | 6ms | [url](https://52ndy2s1ah.execute-api.us-east-2.amazonaws.com/Prod) |
