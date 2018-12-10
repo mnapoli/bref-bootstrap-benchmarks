@@ -15,8 +15,9 @@ $lambdaRuntimeApi = getenv('AWS_LAMBDA_RUNTIME_API');
 
 require __DIR__ . '/vendor/autoload.php';
 
-$socket = '/tmp/php-cgi.sock';
-$cgi = new Process("php-cgi -b {$socket} -c /opt/php.ini -d extension_dir=/opt/php/extensions");
+$socket = '/tmp/php-fpm.sock';
+$config =  __DIR__ .'/php-fpm.conf';
+$cgi = new Process("php-fpm --fpm-config {$config} -c /opt/php.ini -d extension_dir=/opt/php/extensions");
 $cgi->setTimeout(null);
 $cgi->start(function ($type, $output) {
     if ($type === Process::ERR) {
@@ -25,11 +26,12 @@ $cgi->start(function ($type, $output) {
     }
 });
 
+
 register_shutdown_function(function() use(&$cgi) {
     $cgi->stop();
 });
 
-$wait = 10000; // 10ms
+$wait = 5000; // 5ms
 $timeout = 5000000; // 5 secs
 $elapsed = 0;
 while (! file_exists($socket)) {
