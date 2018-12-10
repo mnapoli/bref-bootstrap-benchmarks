@@ -222,6 +222,12 @@ Those are Lambda execution time (not HTTP response time because you would have t
 
 The LAMP stack is a baseline of running the same code but on a classic server with Apache or Nginx. This will help compare performances between LAMP and PHP on Lambda.
 
+### Conclusion
+
+The fastest stable runtime seems to be solution E, i.e. PHP-FPM.
+
+The fastest *experimental* runtime seems to be solution A. However solution G might be a good alternative to A: it provides similar performances but keeps isolation between requests/events.
+
 ## How to run
 
 - clone the repository
