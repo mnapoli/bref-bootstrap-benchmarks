@@ -182,11 +182,11 @@ Solution F is about starting the PHP built-in webserver. The `bootstrap` would b
 
 ### Solution G
 
-Solution G is about writing a custom PHP SAPI (in C) that is inspired from PHP-FPM and the built-in webserver. This SAPI would run as `bootstrap`, start and wait for an event.
+Solution G is about writing a custom PHP SAPI (in C) that is inspired from PHP-FPM and the built-in webserver. This SAPI is run by `bootstrap` and executes a PHP script in a loop, but resets the memory on every loop.
 
-When an event is available it would execute the target PHP script (e.g. index.php) and when the script finishes it would reset the process to scratch and reuse the same process (like PHP-FPM). That would avoid the cost associated to creating a new process (or forking).
+The PHP script would wait for the event, receive it, process it and send a response. The custom SAPI resets the memory every time.
 
-That could also allow to run a boot script *before* an event comes, e.g. load Composer and boot Symfony before a request comes.
+This is basically like solution A except the memory is reset on every loop, meaning we keep the request isolation that exists in PHP since its beginning. It would also be better than solution B/C because by running everything in a single PHP process we avoid the overhead of booting a process for every event.
 
 ### Solution H
 
@@ -213,7 +213,8 @@ Those are Lambda execution time (not HTTP response time because you would have t
 | E | Symfony | 27ms | 14ms |  |
 | F | PHP | 5ms | 1.6ms |  |
 | F | Symfony | 24ms | 16ms |  |
-| G |  |  |  |  |
+| G | PHP | 10ms | 6ms | [url](https://52ndy2s1ah.execute-api.us-east-2.amazonaws.com/Prod) |
+| G | Symfony | 7ms | 3ms | [url](https://g9fzxul00f.execute-api.us-east-2.amazonaws.com/Prod) |
 | H | PHP | ? | ? |  |
 | H | Symfony | 45ms | 22ms |  |
 
