@@ -1,9 +1,6 @@
 {
-    "type": "project",
-    "license": "proprietary",
     "require": {
         "php": "^7.2.3",
-        "ext-ctype": "*",
         "ext-iconv": "*",
         "ext-pcntl": "*",
         "ext-curl": "*",
