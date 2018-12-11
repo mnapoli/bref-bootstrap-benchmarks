@@ -174,7 +174,7 @@ while (true) {
 
 ### Solution E
 
-Solution E is about starting PHP-CGI/PHP-FPM and run it with only one PHP worker. The `bootstrap` would be responsible for forwarding Lambda events using the FastCGI protocol.
+Solution E is about starting PHP-FPM and run it with only one PHP worker. The `bootstrap` would be responsible for forwarding Lambda events using the FastCGI protocol.
 
 ### Solution F
 
@@ -200,25 +200,33 @@ Those are Lambda execution time (not HTTP response time because you would have t
 |----------|-----------|---------|---------|-----|
 | LAMP stack | PHP | 1ms | 0ms |  |
 | LAMP stack | Symfony | 6ms | 4ms |  |
-| Bref 0.2 (baseline) | PHP | 23ms | 15ms | [url](https://69sgjkx4e0.execute-api.us-east-2.amazonaws.com/dev) |
-| Bref 0.2 (baseline) | Symfony | 50ms | 26ms | [url](https://kvverflq1a.execute-api.us-east-2.amazonaws.com/dev) |
-| A | PHP | 5ms | 1ms | [url](https://d8ua4jrr82.execute-api.us-east-2.amazonaws.com/Prod) |
-| A | Symfony | 6ms | 3ms | [url](https://uvrof4qhjb.execute-api.us-east-2.amazonaws.com/Prod) |
+| Bref 0.2 (baseline) | PHP | 21ms | 15ms | [url](https://69sgjkx4e0.execute-api.us-east-2.amazonaws.com/dev) |
+| Bref 0.2 (baseline) | Symfony | 42ms | 22ms | [url](https://kvverflq1a.execute-api.us-east-2.amazonaws.com/dev) |
+| A ☢ | PHP | 4ms | 1ms | [url](https://d8ua4jrr82.execute-api.us-east-2.amazonaws.com/Prod) |
+| A ☢ | Symfony | 6ms | 2ms | [url](https://uvrof4qhjb.execute-api.us-east-2.amazonaws.com/Prod) |
 | B |  |  |  |  |
 | C | PHP |  |  | bugged - please help :) |
 | C | Symfony | 81ms | 65ms | [url](https://x9xirvj7a5.execute-api.us-east-2.amazonaws.com/Prod) |
-| D | PHP | 12ms | 6ms | [url](https://27nex4iys7.execute-api.us-east-2.amazonaws.com/Prod) |
-| D | Symfony | 26ms | 15ms | [url](https://elha5ztbse.execute-api.us-east-2.amazonaws.com/Prod) |
-| E | PHP | 5ms | 1.1ms |  |
-| E | Symfony | 25ms | 13ms |  |
-| F | PHP | 5ms | 1.6ms |  |
-| F | Symfony | 24ms | 16ms |  |
-| G | PHP | 10ms | 6ms | [url](https://52ndy2s1ah.execute-api.us-east-2.amazonaws.com/Prod) |
-| G | Symfony | 7ms | 3ms | [url](https://g9fzxul00f.execute-api.us-east-2.amazonaws.com/Prod) |
-| H | PHP | ? | ? |  |
-| H | Symfony | 45ms | 22ms |  |
+| D ☢ | PHP | 11ms | 6ms | [url](https://27nex4iys7.execute-api.us-east-2.amazonaws.com/Prod) |
+| D ☢ | Symfony | 20ms | 12ms | [url](https://elha5ztbse.execute-api.us-east-2.amazonaws.com/Prod) |
+| E | PHP | 5ms | 1ms | [url](https://ga4uqeibxb.execute-api.us-east-2.amazonaws.com/Prod) |
+| E | Symfony | 18ms | 11ms | [url](https://qw2t6ao82c.execute-api.us-east-2.amazonaws.com/Prod) |
+| F ☢ | PHP | 4ms | 1ms | [url](https://leosblcqf8.execute-api.us-east-2.amazonaws.com/Prod) |
+| F ☢ | Symfony | 17ms | 8ms | [url](https://4j13b914q4.execute-api.us-east-2.amazonaws.com/Prod) |
+| G ☢ | PHP | 5ms | 2ms | [url](https://52ndy2s1ah.execute-api.us-east-2.amazonaws.com/Prod) |
+| G ☢ | Symfony | 8ms | 5ms | [url](https://g9fzxul00f.execute-api.us-east-2.amazonaws.com/Prod) |
+| H | PHP | 18ms | 10ms | [url](https://1o7ekig6f4.execute-api.us-east-2.amazonaws.com/Prod) |
+| H | Symfony | 33ms | 18ms | [url](https://8103l7sz52.execute-api.us-east-2.amazonaws.com/Prod) |
+
+☢: Experimental solution that does not guarantee the same level of stability as a classic LAMP stack.
 
 The LAMP stack is a baseline of running the same code but on a classic server with Apache or Nginx. This will help compare performances between LAMP and PHP on Lambda.
+
+### Conclusion
+
+The fastest stable runtime seems to be solution E, i.e. PHP-FPM.
+
+The fastest *experimental* runtime seems to be solution A. However solution G might be a good alternative to A: it provides similar performances but keeps isolation between requests/events.
 
 ## How to run
 

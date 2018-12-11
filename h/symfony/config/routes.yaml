@@ -1,3 +1,5 @@
 index:
-   path: /
-   controller: App\Controller\HomeController::index
+    path: /{env}
+    controller: App\Controller\HomeController::index
+    defaults:
+        env: dev
