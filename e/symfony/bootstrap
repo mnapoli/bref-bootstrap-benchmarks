@@ -19,6 +19,7 @@ $socket = '/tmp/php-fpm.sock';
 
 function is_server_started($socket)
 {
+    clearstatcache(null, $socket);
     return file_exists($socket);
 }
 
@@ -29,7 +30,6 @@ function wait_for_server($socket)
     $elapsed = 0;
     while (! is_server_started($socket)) {
         usleep($wait);
-        clearstatcache($socket);
         $elapsed += $wait;
         if ($elapsed > $timeout) {
             echo "Timeout while waiting for socket at {$socket}..";
