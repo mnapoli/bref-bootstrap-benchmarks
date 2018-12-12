@@ -29,7 +29,7 @@ function wait_for_server($socket)
     $elapsed = 0;
     while (! is_server_started($socket)) {
         usleep($wait);
-        clearstatcache();
+        clearstatcache($socket);
         $elapsed += $wait;
         if ($elapsed > $timeout) {
             echo "Timeout while waiting for socket at {$socket}..";
@@ -60,7 +60,7 @@ function start_server()
 start_server();
 wait_for_server($socket);
 
-$client  = new Client(new UnixDomainSocket($socket, 30000));
+$client  = new Client(new UnixDomainSocket($socket, 5000, 30000));
 
 while (true) {
     // This is a blocking HTTP call until an event is available

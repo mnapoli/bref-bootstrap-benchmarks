@@ -60,7 +60,7 @@ function start_server()
 start_server();
 wait_for_server($socket);
 
-$client  = new Client(new UnixDomainSocket($socket, 30000));
+$client  = new Client(new UnixDomainSocket($socket, 5000, 30000));
 
 while (true) {
     // This is a blocking HTTP call until an event is available
