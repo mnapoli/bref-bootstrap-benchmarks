@@ -19,7 +19,7 @@ $socket = '/tmp/php-fpm.sock';
 
 function is_server_started($socket)
 {
-    clearstatcache(null, $socket);
+    clearstatcache(false, $socket);
     return file_exists($socket);
 }
 
