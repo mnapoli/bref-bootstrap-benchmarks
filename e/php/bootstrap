@@ -16,41 +16,60 @@ $lambdaRuntimeApi = getenv('AWS_LAMBDA_RUNTIME_API');
 require __DIR__ . '/vendor/autoload.php';
 
 $socket = '/tmp/php-fpm.sock';
-$config =  __DIR__ .'/php-fpm.conf';
-$cgi = new Process("php-fpm --fpm-config {$config} -c /opt/php.ini -d extension_dir=/opt/php/extensions");
-$cgi->setTimeout(null);
-$cgi->start(function ($type, $output) {
-    if ($type === Process::ERR) {
-        echo($output);
-        exit(1);
-    }
-});
 
-
-register_shutdown_function(function() use(&$cgi) {
-    $cgi->stop();
-});
-
-$wait = 5000; // 5ms
-$timeout = 5000000; // 5 secs
-$elapsed = 0;
-while (! file_exists($socket)) {
-    usleep($wait);
-    clearstatcache();
-    $elapsed += $wait;
-    if ($elapsed > $timeout) {
-        echo "Timeout while waiting for socket at {$socket}..";
-        exit(1);
-    }
+function is_server_started($socket)
+{
+    clearstatcache(false, $socket);
+    return file_exists($socket);
 }
 
-echo "Fastcgi socket running on {$socket}";
+function wait_for_server($socket)
+{
+    $wait = 5000; // 5ms
+    $timeout = 5000000; // 5 secs
+    $elapsed = 0;
+    while (! is_server_started($socket)) {
+        usleep($wait);
+        $elapsed += $wait;
+        if ($elapsed > $timeout) {
+            echo "Timeout while waiting for socket at {$socket}..";
+            exit(1);
+        }
+    }
 
-$client  = new Client(new UnixDomainSocket($socket));
+    echo "FastCGI started on {$socket}";
+}
+
+function start_server()
+{
+    $config =  __DIR__ .'/php-fpm.conf';
+    $cgi = new Process("php-fpm --fpm-config {$config} -c /opt/php.ini -d extension_dir=/opt/php/extensions --nodaemonize");
+    $cgi->setTimeout(null);
+    $cgi->start(function ($type, $output) {
+        if ($type === Process::ERR) {
+            echo($output);
+            exit(1);
+        }
+    });
+
+    register_shutdown_function(function() use(&$cgi) {
+        $cgi->stop();
+    });
+}
+
+start_server();
+wait_for_server($socket);
+
+$client  = new Client(new UnixDomainSocket($socket, 5000, 30000));
 
 while (true) {
     // This is a blocking HTTP call until an event is available
     [$event, $invocationId] = waitForEventFromLambdaApi($lambdaRuntimeApi);
+
+    if (!is_server_started($socket)) {
+        start_server();
+        wait_for_server($socket);
+    }
 
     $scriptFilename = __DIR__ . '/' . getenv('_HANDLER');
     $method = $event['httpMethod'] ?? 'GET';
@@ -93,7 +112,12 @@ while (true) {
         $request->setCustomVar($key, $value);
     }
 
-    $response = $client->sendRequest($request);
+    try {
+        $response = $client->sendRequest($request);
+    } catch (\hollodotme\FastCGI\Exceptions\TimedoutException $e) {
+        fail($lambdaRuntimeApi, $invocationId, 'Gateway Timeout', 504);
+        continue;
+    }
 
     $headers = $response->getHeaders();
     $headers['status'] = $headers['status'] ?? '200 Ok';
@@ -180,13 +204,13 @@ function signalSuccessToLambdaApi(string $lambdaRuntimeApi, string $invocationId
     curl_close($ch);
 }
 
-function fail($lambdaRuntimeApi, $invocationId, $errorMessage)
+function fail($lambdaRuntimeApi, $invocationId, $errorMessage, $statusCode = 500)
 {
     $ch = curl_init("http://$lambdaRuntimeApi/2018-06-01/runtime/invocation/$invocationId/response");
 
     $response = [];
 
-    $response['statusCode'] = 500;
+    $response['statusCode'] = $statusCode;
     $response['body'] = $errorMessage;
 
     $response_json = json_encode($response);
