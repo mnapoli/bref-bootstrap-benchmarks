@@ -94,7 +94,9 @@ exit(0); // DIE!
 
 ### Solution C
 
-Just like *B* except `bootstrap` does not handle events: it immediately executes a sub-process. The PHP sub-process will call the integration HTTP API *and wait for an event*. That means that we can run code **before** waiting for an event. E.g. we can bootstrap Composer's autoloader and Symfony before a request comes in!
+**OBSOLETE** *See ([#12][i12])
+
+~Just like *B* except `bootstrap` does not handle events: it immediately executes a sub-process. The PHP sub-process will call the integration HTTP API *and wait for an event*. That means that we can run code **before** waiting for an event. E.g. we can bootstrap Composer's autoloader and Symfony before a request comes in!~
 
 <details><summary>Click here for code examples</summary>
 
@@ -240,3 +242,6 @@ To deploy you will need to create a bucket and update the bucket name everywhere
 To benchmark: run `ab -c 1 -n 100 <the url of the lambda>` (check the URL responds correctly). Check out the execution time *of the lambda* in Cloudwatch.
 
 The first time you deploy, if it fails, you will need to delete the stack in CloudFormation manually. This is how CloudFormation works.
+
+
+[i12]: https://github.com/mnapoli/bref-bootstrap-benchmarks/issues/12
