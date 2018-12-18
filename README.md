@@ -94,7 +94,7 @@ exit(0); // DIE!
 
 ### Solution C
 
-**OBSOLETE** *See ([#12][i12])
+**OBSOLETE** *See ([#12][i12])*
 
 ~Just like *B* except `bootstrap` does not handle events: it immediately executes a sub-process. The PHP sub-process will call the integration HTTP API *and wait for an event*. That means that we can run code **before** waiting for an event. E.g. we can bootstrap Composer's autoloader and Symfony before a request comes in!~
 
