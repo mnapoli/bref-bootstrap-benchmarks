@@ -94,7 +94,9 @@ exit(0); // DIE!
 
 ### Solution C
 
-Just like *B* except `bootstrap` does not handle events: it immediately executes a sub-process. The PHP sub-process will call the integration HTTP API *and wait for an event*. That means that we can run code **before** waiting for an event. E.g. we can bootstrap Composer's autoloader and Symfony before a request comes in!
+**OBSOLETE** *See ([#12][i12])*
+
+~Just like *B* except `bootstrap` does not handle events: it immediately executes a sub-process. The PHP sub-process will call the integration HTTP API *and wait for an event*. That means that we can run code **before** waiting for an event. E.g. we can bootstrap Composer's autoloader and Symfony before a request comes in!~
 
 <details><summary>Click here for code examples</summary>
 
@@ -205,8 +207,6 @@ Those are Lambda execution time (not HTTP response time because you would have t
 | A ☢ | PHP | 4ms | 1ms | [url](https://d8ua4jrr82.execute-api.us-east-2.amazonaws.com/Prod) |
 | A ☢ | Symfony | 6ms | 2ms | [url](https://uvrof4qhjb.execute-api.us-east-2.amazonaws.com/Prod) |
 | B |  |  |  |  |
-| C | PHP |  |  | bugged - please help :) |
-| C | Symfony | 81ms | 65ms | [url](https://x9xirvj7a5.execute-api.us-east-2.amazonaws.com/Prod) |
 | D ☢ | PHP | 11ms | 6ms | [url](https://27nex4iys7.execute-api.us-east-2.amazonaws.com/Prod) |
 | D ☢ | Symfony | 20ms | 12ms | [url](https://elha5ztbse.execute-api.us-east-2.amazonaws.com/Prod) |
 | E | PHP | 5ms | 1ms | [url](https://ga4uqeibxb.execute-api.us-east-2.amazonaws.com/Prod) |
@@ -240,3 +240,6 @@ To deploy you will need to create a bucket and update the bucket name everywhere
 To benchmark: run `ab -c 1 -n 100 <the url of the lambda>` (check the URL responds correctly). Check out the execution time *of the lambda* in Cloudwatch.
 
 The first time you deploy, if it fails, you will need to delete the stack in CloudFormation manually. This is how CloudFormation works.
+
+
+[i12]: https://github.com/mnapoli/bref-bootstrap-benchmarks/issues/12
