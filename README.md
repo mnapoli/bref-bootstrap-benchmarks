@@ -1,4 +1,4 @@
-**For more updated benchmarks please check out [github.com/brefphp/bref-benchmark](https://github.com/brefphp/bref-benchmark)**
+**For more up to date benchmarks check out [github.com/brefphp/bref-benchmark](https://github.com/brefphp/bref-benchmark).**
 
 ---
 
