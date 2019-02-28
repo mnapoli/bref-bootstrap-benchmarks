@@ -1,3 +1,7 @@
+**For more updated benchmarks please check out [github.com/brefphp/bref-benchmark](https://github.com/brefphp/bref-benchmark)**
+
+---
+
 This is a benchmark of possible solutions for Bref to run PHP on AWS Lambda.
 
 The issue in Bref is here: [mnapoli/bref#100](https://github.com/mnapoli/bref/issues/100).
